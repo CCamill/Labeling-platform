@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    {#    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">#}
+    <title>iLabel</title>
+    {% load static %}
+    <script src="{% static 'lib/p5.min.js' %}"></script>
+    <script src="{% static 'clickable.js' %}"></script>
+    <script src="{% static 'sketch.js' %}"></script>
+
+    <link rel="icon" href="{% static 'favicon.ico' %}" sizes="32x32">
+    <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic">
+</head>
+
+<body id="page-top" style="background: url('{% static 'assets/img/bg-masthead.jpg' %}');background-size: 100%;">
+<!-- Start: Heading -->
+<div class="container my-auto text-center" style="margin-top: 0px;padding-top: 21px;">
+    <h1 class="mb-1" style="text-align: left;">iLabel</h1>
+    <h3 class="mb-5" style="text-align: left;"><em
+            style="text-align: left;padding: 0px;font-size: 22px;padding-left: 18px;">start to LABEL them.</em></h3>
+</div>
+<!-- End: Heading -->
+<!-- Start: Operate Area -->
+<div class="container" style="opacity: 1;filter: blur(0px) grayscale(0%) hue-rotate(0deg) invert(0%) sepia(0%);">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Operate</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Start: Canvas Area -->
+                <div style="height: 650px;width: 700px">
+                    <div id="sketchContainer" class="rounded border rounded-0"
+                         style="width: 100%;height: 100%;background: #c6c6c6;">
+                    </div>
+                </div>
+                <!-- End: Canvas Area -->
+                <!-- Start: Operators -->
+                <div class="col-4">
+                    <div class="row" style="padding: 30px;">
+                        <div class="col-auto align-self-center mx-auto">
+                            <button id="LOAD_IMAGE" class="btn btn-secondary" type="button"
+                                    style="width: 148px;height: 47px;">LOAD
+                                IMAGE
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-auto m-auto" style="padding: 15px;">
+                            <div class="btn-group border rounded shadow-sm" role="group">
+                                <button id="DrawEPI" class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;margin: 2px;margin-right: 2px;margin-left: 2px;">DrawEPI&nbsp;
+                                </button>
+                                <button id="DeleteEPI" class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;border-style: none;margin: 2px;margin-right: 2px;margin-left: 2px;">
+                                    DeleteEPI&nbsp;
+                                </button>
+                                <button id="SaveEPI"
+                                        class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;margin: 2px;margin-right: 2px;margin-left: 2px;">SaveEPI&nbsp;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-auto m-auto" style="padding: 15px;">
+                            <div class="btn-group border rounded shadow-sm" role="group">
+                                <button id="DrawMID" class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;margin: 2px;">DrawMID&nbsp;
+                                </button>
+                                <button id="DeleteMID" class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;border-style: none;margin: 2px;">DeleteMID&nbsp;
+                                </button>
+                                <button id="SaveMID"
+                                        class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;margin: 2px;">SaveMID&nbsp;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-auto m-auto" style="padding: 15px;">
+                            <div class="btn-group border rounded shadow-sm" role="group">
+                                <button id="DrawENDO" class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;margin: 2px;">DrawENDO
+                                </button>
+                                <button id="DeleteENDO" class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;border-style: none;margin: 2px;">DeleteENDO
+                                </button>
+                                <button id="SaveENDO"
+                                        class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;margin: 2px;">SaveENDO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="padding: 30px;">
+                        <div class="col-auto align-self-center mx-auto">
+                            <button id="SHOW_IMAGE" class="btn btn-secondary" type="button"
+                                    style="width: 148px;height: 47px;">SHOW
+                                IMAGE
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row" style="padding: 30px;">
+                        <div class="col-auto align-self-center mx-auto" style="color: green">
+                            按住 <strong>Z键</strong> 进行绘制。<br/>
+                            按下 <strong>Delete键</strong> 删除最后一个结点。
+                        </div>
+                    </div>
+                </div>
+                <!-- End: Operators -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Operate Area -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+<script src="{% static 'assets/js/script.min.js' %}"></script>
+
+
+<script>
+    let EPI_Data = []
+    let MID_Data = []
+    let ENDO_Data = []
+
+    let CurrentStatus = 0
+
+    function update_panel_status(stage) { // 0, 1, 2, 3
+        $("#DrawEPI").attr('disabled', stage < 1)
+        $("#DeleteEPI").attr('disabled', stage < 1)
+        $("#SaveEPI").attr('disabled', stage < 1)
+
+        $("#DrawMID").attr('disabled', stage < 2)
+        $("#DeleteMID").attr('disabled', stage < 2)
+        $("#SaveMID").attr('disabled', stage < 2)
+
+        $("#DrawENDO").attr('disabled', stage < 3)
+        $("#DeleteENDO").attr('disabled', stage < 3)
+        $("#SaveENDO").attr('disabled', stage < 3)
+
+        $("#SHOW_IMAGE").attr('disabled', stage < 4)
+    }
+
+
+    function init() {
+        $("#DrawEPI").click(() => {
+            if (CurrentStatus )
+            vertexList = []
+        })
+        $("#DeleteEPI").click(() => {
+            EPI_Data = []
+        })
+        $("#SaveEPI").click(() => {
+            EPI_Data = vertexList.slice()
+
+            CurrentStatus = CurrentStatus < 2 ? 2 : CurrentStatus
+            update_panel_status(CurrentStatus)
+        })
+
+        $("#DrawMID").click(() => {
+            vertexList = []
+        })
+        $("#DeleteMID").click(() => {
+
+        })
+        $("#SaveMID").click(() => {
+            MID_Data = vertexList.slice()
+
+            CurrentStatus = CurrentStatus < 3 ? 3 : CurrentStatus
+            update_panel_status(CurrentStatus)
+        })
+
+        $("#DrawENDO").click(() => {
+            vertexList = []
+        })
+        $("#DeleteENDO").click(() => {
+
+        })
+        $("#SaveENDO").click(() => {
+            ENDO_Data = vertexList.slice()
+            CurrentStatus = CurrentStatus < 4 ? 4 : CurrentStatus
+            update_panel_status(CurrentStatus)
+        })
+    }
+
+    // This is the sketch launcher
+    window.onload = function () {
+        let sketchContainer = document.getElementById("sketchContainer");
+        let originContainer = document.getElementById("defaultCanvas0");
+
+        originContainer.style.width = "100%"
+        originContainer.style.height = "100%"
+        sketchContainer.appendChild(originContainer);
+
+        CurrentStatus = 1
+        update_panel_status(CurrentStatus)
+        init()
+    }
+</script>
+</body>
+
+</html>

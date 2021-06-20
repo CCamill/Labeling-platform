@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    {#    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">#}
+    <title>iLabel</title>
+    {% load static %}
+    <script src="{% static 'lib/p5.min.js' %}"></script>
+    <script src="{% static 'clickable.js' %}"></script>
+    <script src="{% static 'sketch.js' %}"></script>
+
+    <link rel="icon" href="{% static 'favicon.ico' %}" sizes="32x32">
+    <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic">
+
+     <style>
+        .Arrowheads{
+            clear:both;
+            width:100%;
+            height:50px;
+            margin:15px 0 15px 80px;
+        }
+        .SecondArrowheads{
+            clear:both;
+            width:100%;
+            height:50px;
+            margin:15px 0 15px 80px;
+        }
+        .id1{
+            float:left;
+            width: 50px;
+            height: 45px;
+            background: white;
+            border:1px solid #cedddd;
+            border-radius: 3px;
+            text-align: center;
+            line-height: 40.5px;
+            font-family:SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace!important;
+            font-size: 23px;
+            }
+            .id2{
+                float:left;
+                width: 30px;
+            height: 30px;
+                margin-top: 6px;
+            }
+            .id3{
+                float:left;
+                width: 30px;
+            height: 30px;
+                margin-top: 6px;
+            }
+            .gettitle{
+                float:left;
+                font-size: 20.5px;
+                margin-top: 6px;
+                font-family:SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace!important;
+            }
+            .gettitle1{
+                float:left;
+                font-size: 20.5px;
+                letter-spacing: 2.2px;
+                margin-top: 6px;
+                font-family:SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace!important;
+            }
+            .topheads{
+                width:100%;
+            height:40px;
+            margin:28px 0 0 0;
+            }
+            .secondtop{
+                width:20px;
+                height:20px;
+                margin:0 0 0 25px;
+            }
+            .thirdtop{
+                font-size:22px;
+                font-family:SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace!important;
+            }
+    </style>
+</head>
+
+<body id="page-top" style="background: url('{% static 'assets/img/bg-masthead.jpg' %}');background-size: 100%;">
+
+<div id="csrf_token" hidden="hidden">{{ csrf_token }}</div>
+
+
+<!-- Start: Heading -->
+<div class="container my-auto text-center" style="margin-top: 0px;padding-top: 21px;">
+    <h1 class="mb-1" style="text-align: left;">iLabel</h1>
+    <h3 class="mb-5" style="text-align: left;"><em
+            style="text-align: left;padding: 0px;font-size: 22px;padding-left: 18px;">start to LABEL them.</em></h3>
+</div>
+<!-- End: Heading -->
+<!-- Start: Operate Area -->
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Operate</h5>
+            <h6 id="FileName" align="center">No File Uploaded</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Start: Canvas Area -->
+                <div style="height: 650px;width: 700px">
+                    <div id="sketchContainer" class="rounded border rounded-0"
+                         style="width: 100%;height: 100%;background: #c6c6c6;">
+                    </div>
+                </div>
+                <!-- End: Canvas Area -->
+                <!-- Start: Operators -->
+                <div class="col-4">
+                    <div class="row" style="padding: 30px;">
+                        <div class="col-auto align-self-center mx-auto">
+{#                            <form enctype="multipart/form-data"  method="POST">#}
+{#                                {% csrf_token %}#}
+{#                                <input type="file" name="upload" id="file_input" multiple webkitdirectory="">#}
+{#                                <br/>#}
+{#                                <input type="submit" value="Load Image">#}
+{#                            </form>#}
+                            <button id="LOAD_IMAGE" class="btn btn-secondary" type="button"
+                                    style="width: 148px;height: 47px;">LOAD FILE
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-auto m-auto" style="padding: 15px;">
+                            <div class="btn-group border rounded shadow-sm" role="group">
+                                <button id="Clear" class="btn btn-dark text-monospace" type="button"
+                                        style="height: 50px;width:145px;border-style: none;margin: 2px;margin-right: 2px;margin-left: 2px;">
+                                    Clear Canvas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="padding: 30px;">
+                        <div class="col-auto align-self-center mx-auto">
+                            <button id="DOWNLOAD" class="btn btn-secondary" type="button" 
+                                    style="width: 148px;height: 65px;">Download the current Gate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row" style="padding: 30px;">
+                        <div class="col-auto align-self-center mx-auto">
+                            <button id="DOWNLOAD_patient" class="btn btn-secondary" type="button" 
+                                    style="width: 148px;height: 65px;">Download the patient
+                            </button>
+                        </div>
+                    </div>
+
+
+<div class="Arrowheads">
+    <img src="../static/left photo.svg" class="id2" id="tum">
+    <p class="gettitle1">Gate:</p>
+    <div class="id1" id="num">0</div>
+    <img src="../static/right photo.svg" class="id3" id="sum">
+</div>
+<div class="SecondArrowheads">
+    <img src="../static/left photo.svg" class="id2" id="eum">
+    <p class="gettitle">Slice:</p>
+    <div class="id1" id="mum">0</div>
+    <img src="../static/right photo.svg" class="id3" id="yum">
+</div>
+<div class="topheads">
+<input  class="secondtop" id="check1" type="checkbox" />
+    <span class="thirdtop">Endo</span>
+<input class="secondtop" id="check2" type="checkbox" />
+    <span class="thirdtop">MidMyo</span>
+<input class="secondtop" id="check3" type="checkbox"/>
+    <span class="thirdtop">Epi</span>
+</div>
+
+
+
+    
+                    </div>
+                </div>
+                <!-- End: Operators -->
+                <div class="col-auto align-self-center mx-auto" style="color: green">
+                    按住 <strong>Z键</strong> 进行绘制。
+                    按下 <strong>Delete键</strong> 删除最后一个结点。
+                    请不要把 <strong>结点</strong> 绘制在 <strong>可行域</strong> 外。
+                </div>
+        </div>
+            
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" >
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Predicting Endo, Please Wait...</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="prog_out" class="progress progress-striped active">
+                        <div id="prog_in" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- End: Operate Area -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+<script src="{% static 'assets/js/script.min.js' %}"></script>
+
+
+<script>
+    let CurrentFile = null
+    var upload_url = {% url "upload" %}
+    var get_predict_contours_url = {% url "get_predict_contours" %}
+    var download_zipfile_url = {% url "download_zipfile" %}
+    var download_patient_zipfile_url = {% url "download_patient_zipfile" %}
+    var process_url = {% url "progress" %}
+    var save_current_image_url = {% url "save_current_image" %}
+
+    var image_dir
+    var Patient_name
+    var pointsList
+    var gate_index
+    var slice_index
+    var contour_index
+    function init() {
+
+        firstbtn = document.getElementById('sum');
+        mainbtn = document.getElementById('num');
+        secondbtn = document.getElementById('tum');
+        thirdbtn = document.getElementById('yum');
+        secondmainbtn = document.getElementById('mum');
+        forthbtn = document.getElementById('eum');
+        
+
+        　firstbtn.onclick=function (){
+            if(window.gate_index<8){
+                save_vertex_to_points(window.contour_index)
+                save_slice()
+                window.gate_index=window.gate_index+1;
+                window.contour_index = 1
+                window.slice_index = 1
+                mainbtn.innerHTML=window.gate_index;
+                secondmainbtn.innerHTML=window.slice_index;
+                get_predict_contours(patient_name,window.gate_index,window.slice_index)
+                Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+            }
+
+        }
+        　secondbtn.onclick=function (){
+            if(window.gate_index>1){
+                save_vertex_to_points(window.contour_index)
+                save_slice()
+                window.gate_index=window.gate_index-1;
+                window.contour_index = 1
+                window.slice_index = 1
+                mainbtn.innerHTML=window.gate_index;
+                secondmainbtn.innerHTML=window.slice_index;
+                get_predict_contours(patient_name,window.gate_index,window.slice_index)
+                Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+            }
+        }
+
+        thirdbtn.onclick=function (){
+            if(window.slice_index<32){
+                save_slice()
+                window.slice_index=window.slice_index+1;
+      　        secondmainbtn.innerHTML=window.slice_index;
+                window.contour_index = 1
+                get_predict_contours(patient_name,window.gate_index,window.slice_index)
+                Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+            }
+            else if (window.gate_index < 8){
+                save_slice()
+                window.gate_index = window.gate_index + 1
+                window.slice_index=1;
+      　        mainbtn.innerHTML=window.gate_index;
+                secondmainbtn.innerHTML=window.slice_index;
+                window.contour_index = 1
+                get_predict_contours(patient_name,window.gate_index,window.slice_index)
+                Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+            }
+        }
+        forthbtn.onclick=function (){
+            if(window.slice_index>1){
+                save_slice()
+                window.slice_index=window.slice_index-1;
+      　        mainbtn.innerHTML=window.slice_index;
+                window.contour_index = 1
+                get_predict_contours(patient_name,window.gate_index,window.slice_index)
+                Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+            }
+            else if (window.gate_index > 1){
+                save_slice()
+                window.gate_index = window.gate_index - 1
+                window.slice_index=1;
+      　        mainbtn.innerHTML=window.gate_index;
+                secondmainbtn.innerHTML=window.slice_index;
+                window.contour_index = 1
+                get_predict_contours(patient_name,window.gate_index,window.slice_index)
+                Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+            }
+        }
+
+        $("#check1").click(function(){
+            save_vertex_to_points(window.contour_index)
+            defalt_checked()
+            document.getElementById('check1').checked = true
+            window.contour_index = 1
+            window.vertexList = trans_points_to_vertex(window.pointsList, window.vertexList, window.contour_index)
+        });
+        $("#check2").click(function(){
+            save_vertex_to_points(window.contour_index)
+            defalt_checked()
+            document.getElementById('check2').checked = true
+            window.contour_index = 2
+            window.vertexList = trans_points_to_vertex(window.pointsList, window.vertexList, window.contour_index)
+        });
+        $("#check3").click(function(){
+            save_vertex_to_points(window.contour_index)
+            defalt_checked()
+            document.getElementById('check3').checked = true
+            window.contour_index = 3
+            window.vertexList = trans_points_to_vertex(window.pointsList, window.vertexList, window.contour_index)
+        });
+
+        $("#Clear").click(() => {
+            vertexList = []
+        })
+
+        $("#DOWNLOAD_patient").click(() => {
+            $.ajax({
+                    url: download_patient_zipfile_url,
+                    method: "POST",
+                    data: {
+                        "patient_name": JSON.stringify(window.Patient_name),
+                    },
+                    dataType: 'JSON',
+                    async: false,
+                    traditional: true,
+                    success: function(resdata){
+                        image_dir = JSON.parse(resdata.File_dir)
+                        patient_name = JSON.parse(resdata.Patient_name)
+                        var download_file_url = image_dir + patient_name + "/" + patient_name+".zip"
+                        console.log(download_file_url)
+                        var $eleForm = $("<form method='get'></form>");
+                        $eleForm.attr("action",download_file_url);
+                        $(document.body).append($eleForm);
+                        //提交表单，实现下载
+                        $eleForm.submit()
+                    }
+                })
+        })
+
+        $("#DOWNLOAD").click(() => {
+            $.ajax({
+                    url: download_zipfile_url,
+                    method: "POST",
+                    data: {
+                        "patient_name": JSON.stringify(window.Patient_name),
+                        "gate_index": JSON.stringify(window.gate_index),
+                    },
+                    dataType: 'JSON',
+                    async: false,
+                    traditional: true,
+                    success: function(resdata){
+                        image_dir = JSON.parse(resdata.File_dir)
+                        patient_name = JSON.parse(resdata.Patient_name)
+                        gate = JSON.parse(resdata.gate_dir)
+                        var download_file_url = image_dir + patient_name + "/"  +  gate + ".zip"
+                        console.log(download_file_url)
+                        var $eleForm = $("<form method='get'></form>");
+                        $eleForm.attr("action",download_file_url);
+                        $(document.body).append($eleForm);
+                        //提交表单，实现下载
+                        $eleForm.submit()
+                    }
+                })
+        })
+
+        $("#LOAD_IMAGE").click(() => {
+            inputElement = $('<input type="file"  multiple webkitdirectory name="file" upload/>')
+            inputElement.change(() => {
+                CurrentFile = inputElement[0].files;
+                console.log("CurrentFile")
+                console.log(CurrentFile)
+                Date_path = CurrentFile[0].webkitRelativePath
+                console.log("Date_path:")
+                console.log(Date_path)
+                window.Patient_name = Date_path.substring(0,Date_path.indexOf('/Gate'))
+                $('#FileName').text(window.Patient_name)
+                var fd = new FormData();
+                for (var i = 0; i < CurrentFile.length; i++) {
+
+                   fd.append("files", CurrentFile[i]);
+                   fd.append("paths", CurrentFile[i]['webkitRelativePath']);
+
+                }
+                $('#myModal').modal({
+                    backdrop: "static"
+                })
+                var iCount = setInterval(function(){
+                    $.ajax({
+                    type: 'GET',
+                    url: process_url,
+                    data: {
+                    },
+                    dataType: 'JSON',
+                    traditional: true,
+                    success: function (res) {
+                        $('#myModalLabel').text("Predicting "+JSON.parse(res.mode)+", Please Wait...");
+                        $('#prog_in').width(res.numprogress + '%');
+                    }
+                })
+                }, 1000);
+                $.ajax({
+                    url: upload_url,
+                    method: "POST",
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    cache: false,
+                    success: function(resdata){
+                        window.image_dir = JSON.parse(resdata.File_dir)
+                        patient_name = JSON.parse(resdata.Patient_name)
+                        window.gate_index = resdata.Gate_index
+                        window.slice_index = resdata.Slice_index
+                        window.contour_index =resdata.Contour_index
+                        get_predict_contours(patient_name,window.gate_index,window.slice_index)
+                        $("#myModal").modal("hide")
+                        clearInterval(iCount)
+                        Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+                    }
+                });
+            })
+            inputElement.click()
+        })
+
+    }
+
+    // This is the sketch launcher
+    window.onload = function () {
+        let sketchContainer = document.getElementById("sketchContainer");
+        let originContainer = document.getElementById("defaultCanvas0");
+
+        originContainer.style.width = "100%"
+        originContainer.style.height = "100%"
+        sketchContainer.appendChild(originContainer);
+
+        init()
+    }
+
+    function Auto_Draw(image_dir,patient_name,gate_index,slice_index,contour_index) {
+        var imgurl = image_dir + patient_name + "/processed/Gate" +gate_index +
+            "/image_slice"+ slice_index + ".png"
+        loadImage(imgurl, img=>{
+            bgobj.setImage(img)
+            window.vertexList = trans_points_to_vertex(window.pointsList, window.vertexList, contour_index)
+            update_infor(gate_index,slice_index,contour_index)
+        })
+    }
+
+    function get_predict_contours(patient_name,gate_index,slice_index){
+                $.ajax({
+                    url: get_predict_contours_url,
+                    method: "GET",
+                    data: {
+                        "patient_name": JSON.stringify(patient_name),
+                        "gate_index": gate_index,
+                        "slice_index": slice_index,
+                    },
+                    dataType: 'JSON',
+                    async: false,
+                    traditional: true,
+                    success: function(resdata){
+                        window.pointsList = JSON.parse(resdata.contours)
+                    }
+                })
+    }
+
+    function trans_points_to_vertex(pointsList, vertexList, contour_index) {
+        vertexList = []
+        switch (contour_index) {
+            case 1:
+                if (pointsList[0].length > 0) {
+                    let arr = pointsList[0]
+                    arr.forEach((el,index,array) => {
+                        mouse_location = gridToPos(parseFloat(el[0]), parseFloat(el[1]))
+                        vertexList.push(trans_clickable(mouse_location))
+                    })
+                }
+                break;
+            case 2:
+                if (pointsList[1].length > 0) {
+                    let arr = pointsList[1]
+                    arr.forEach((el,index,array) => {
+                        mouse_location = gridToPos(parseFloat(el[0]), parseFloat(el[1]))
+                        vertexList.push(trans_clickable(mouse_location))
+                    })
+                }
+                break;
+            case 3:
+                if (pointsList[2].length > 0) {
+                    let arr = pointsList[2]
+                    arr.forEach((el,index,array) => {
+                        mouse_location = gridToPos(parseFloat(el[0]), parseFloat(el[1]))
+                        vertexList.push(trans_clickable(mouse_location))
+                    })
+                }
+                break;
+        }
+        return vertexList
+    }
+
+    function trans_clickable(mouse_location){
+        mouse_X = mouse_location[0]
+        mouse_Y = mouse_location[1]
+        let click = new Clickable();
+        click.cornerRadius = DragBallSize;
+        click.resize(DragBallSize * 2, DragBallSize * 2)
+        click.locate(mouse_X - DragBallSize, mouse_Y - DragBallSize);
+        click.onHover = onHover
+        click.onOutside = onOutside
+        click.onPress = onPress
+        click.onRelease = onRelease
+        return click
+    }
+
+    function save_vertex_to_points(contour_index){
+        var save_list = []
+        for (let b in window.vertexList) {
+            save_list.push(tranToGrid(window.vertexList[b].x, window.vertexList[b].y))
+        }
+        window.pointsList[contour_index-1] = save_list
+        console.log(window.pointsList[0])
+    }
+
+    function save_current_image(patient_name,gate_index,slice_index){
+        $.ajax({
+                    url: save_current_image_url,
+                    method: "POST",
+                    data: {
+                        "endo_contour": JSON.stringify(window.pointsList[0]),
+                        "midmyo_contour": JSON.stringify(window.pointsList[1]),
+                        "epi_contour": JSON.stringify(window.pointsList[2]),
+                        "patient_name": JSON.stringify(patient_name),
+                        "gate_index": gate_index,
+                        "slice_index": slice_index,
+                    },
+                    dataType: 'JSON',
+                    async: false,
+                    traditional: true,
+                    success: function(resdata){
+                    }
+                })
+    }
+    function defalt_checked(){
+            document.getElementById('check1').checked = false
+            document.getElementById('check2').checked = false
+            document.getElementById('check3').checked = false
+        }
+
+    function update_infor(gate_index,slice_index,contour_index){
+        mainbtn.innerHTML = gate_index
+        secondmainbtn.innerHTML = slice_index
+        switch (contour_index) {
+            case 1:
+                defalt_checked()
+                document.getElementById('check1').checked = true
+                console.log(window.pointsList[0])
+                break
+            case 2:
+                defalt_checked()
+                document.getElementById('check2').checked = true
+                console.log(window.pointsList)
+                console.log(window.vertexList)
+                break
+            case 3:
+                defalt_checked()
+                document.getElementById('check3').checked = true
+                console.log(window.pointsList)
+                console.log(window.vertexList)
+                break
+        }
+    }
+
+    function keyPressed() {
+    if (keyIsDown(DeleteTailWithKey)) {
+        vertexList.pop()
+    }
+    if (keyIsDown(32)) {//按下空格键，把数据输出到console，方便调试
+        if(window.contour_index<3){
+            save_vertex_to_points(window.contour_index)
+            defalt_checked()
+            window.contour_index = window.contour_index + 1
+            if(window.contour_index==2){
+                document.getElementById('check2').checked = true
+            }
+            else {
+                document.getElementById('check3').checked = true
+            }
+            window.vertexList = trans_points_to_vertex(window.pointsList, window.vertexList, window.contour_index)
+        }
+        else if (window.slice_index<32){
+            save_slice()
+            window.slice_index=window.slice_index+1;
+  　        secondmainbtn.innerHTML=window.slice_index;
+            window.contour_index = 1
+            get_predict_contours(patient_name,window.gate_index,window.slice_index)
+            Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+        }
+        else if(window.gate_index<8){
+            save_slice()
+            window.gate_index = window.gate_index + 1
+            window.slice_index=1;
+  　        mainbtn.innerHTML=window.gate_index;
+            secondmainbtn.innerHTML=window.slice_index;
+            window.contour_index = 1
+            get_predict_contours(patient_name,window.gate_index,window.slice_index)
+            Auto_Draw(window.image_dir,patient_name,window.gate_index,window.slice_index,window.contour_index)
+
+        }
+        else {
+
+        }
+    }
+}
+
+function save_slice(){
+            save_vertex_to_points(window.contour_index)
+            save_current_image(window.Patient_name,window.gate_index,window.slice_index)
+        }
+
+</script>
+</body>
+</html>
