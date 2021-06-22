@@ -26,6 +26,7 @@ global num_progress
 global mode_index
 mode_index = 1
 
+
 def index(request):
     global mode_index
     global num_progress
@@ -46,14 +47,14 @@ def upload(request):
 
         #Patient008902
         patient_name = pathlist[0][:pathlist[0].rfind("/Gate")]
+        #\static\upload\Patient008902
+        patient_position = os.path.join(upload_dir, patient_name)
+
         # noinspection PyInterpreter
         if not dirlist:
             return HttpResponse('files not found')
         else:
             for file in dirlist:
-                #\static\upload\Patient008902
-                patient_position = os.path.join(upload_dir, patient_name)
-
                 #\static\upload\Patient009087\Patient009087/Gate6  dirlist.index(file)返回file的下标（下标从零开始）
                 position = os.path.join(patient_position, '/'.join(pathlist[dirlist.index(file)].split('/')[:-1]))
                 if not os.path.exists(position):
@@ -63,36 +64,39 @@ def upload(request):
                 for chunk in file.chunks():
                     storage.write(chunk)
                 storage.close()
-            #upload\Patient008902_s\processed\prediction
-            prediction_path = trans_mat_to_png(patient_position, patient_name)
+            origin_patient_data_path = os.path.join(patient_position,patient_name)
+            gate_index_list = []
+            for gate in os.listdir(origin_patient_data_path):
+                gate_path = os.path.join(origin_patient_data_path,gate)
+                if len(os.listdir(gate_path)) != 224:
+                    gate_index_list.append(int(gate_path[-1]))
 
+            print('gate_index_list',gate_index_list)
+            #static\upload\Patient008902\processed
+            processed_dir = os.path.join(patient_position, "processed")
+            #\static\upload\Patient008902\processed\prediction
+            prediction_path = os.path.join(processed_dir,"prediction")
 
-            predict_patient_slices_endo(prediction_path, patient_position, patient_name)
-            predict_patient_slices_epi(prediction_path, patient_position, patient_name)
+            if not os.path.exists(prediction_path):
+                os.makedirs(prediction_path)
             
-            
+            trans_mat_to_png(patient_position, patient_name,processed_dir,prediction_path,gate_index_list)
 
+            predict_patient_slices_endo(prediction_path, patient_position, patient_name,gate_index_list)
+            predict_patient_slices_epi(prediction_path, patient_position, patient_name,gate_index_list)
+            
             context = {
                 "File_dir": json.dumps("/static/upload/"),
                 "Patient_name": json.dumps(patient_name),
-                "Gate_index": 1,
+                "Gate_index": gate_index_list[0],
                 "Slice_index": 1,
                 "Contour_index": 1,
             }
             return JsonResponse(context)
 
-
 #mat文件转png
-def trans_mat_to_png(patient_position, patient_name):
-    #static\upload\Patient008902\processed
-    processed_dir = os.path.join(patient_position, "processed")
-    #\static\upload\Patient008902\processed\prediction
-    prediction_path = os.path.join(processed_dir,"prediction")
-
-    if not os.path.exists(prediction_path):
-        os.makedirs(prediction_path)
-    for gate_index in range(predict_gate[0], predict_gate[1]):
-
+def trans_mat_to_png(patient_position, patient_name,processed_dir,prediction_path,gate_index_list):
+    for gate_index in gate_index_list:
         gate_path = os.path.join(processed_dir, "Gate{}".format(gate_index))
         gate_slices = []
         if not os.path.exists(gate_path):
@@ -124,9 +128,8 @@ def trans_mat_to_png(patient_position, patient_name):
         save_npy = np.expand_dims(np.expand_dims(np.array(gate_slices),axis=0),axis=-1)
         #保存npy文件
         np.save(os.path.join(prediction_gate_path,"gate{}.npy".format(gate_index)),save_npy)
-    return prediction_path
 
-def predict_patient_slices_endo(prediction_path, patient_position, patient_name):
+def predict_patient_slices_endo(prediction_path, patient_position, patient_name,gate_index_list):
     print("Predicting")
     global mode_index
     global num_progress
@@ -142,7 +145,7 @@ def predict_patient_slices_endo(prediction_path, patient_position, patient_name)
         sess.run(tf.global_variables_initializer())
         #调用模型
         saver.restore(sess, os.path.join(endo_model_dir, 'params_0'))
-        for i in range(predict_gate[0],predict_gate[1]):
+        for i in gate_index_list:
             mat_data = scio.loadmat(os.path.join(os.path.join(os.path.join(patient_position,
                                                 patient_name), "Gate{}".format(i)),"image_slice1.mat"))
             mat_shape = mat_data[list(mat_data.keys())[-1]].shape
@@ -160,12 +163,12 @@ def predict_patient_slices_endo(prediction_path, patient_position, patient_name)
             final_prediction = np.squeeze(np.argmax(np.mean(np.array(patient_fold_prediction), axis=0),axis=-1))
             print("Gate{}Done".format(i))
             for q in range(0,32):
-                num_progress = (i * 32 + (q + 1)) / (32 * 8)*100
+                num_progress = (i * 32 + (q + 1)) / (32 * len(gate_index_list))*100
                 countour_image = trans_to_original_scale(final_prediction[q], mat_shape)
                 np.save(os.path.join(os.path.join(prediction_path,"Gate{}".format(i)),"endo_slice{}.npy".format(q+1)),countour_image)
                 # plt.imsave(os.path.join(os.path.join(prediction_path,"Gate{}".format(i)),"endo_slice{}.png".format(q+1)),countour_image)
 
-def predict_patient_slices_epi(prediction_path, patient_position, patient_name):
+def predict_patient_slices_epi(prediction_path, patient_position, patient_name,gate_index_list):
     print("Predicting")
     global mode_index
     global num_progress
@@ -181,7 +184,7 @@ def predict_patient_slices_epi(prediction_path, patient_position, patient_name):
         sess.run(tf.global_variables_initializer())
         #调用模型
         saver.restore(sess, os.path.join(epi_model_dir, 'params_0'))
-        for i in range(predict_gate[0],predict_gate[1]):
+        for i in gate_index_list:
             mat_data = scio.loadmat(os.path.join(os.path.join(os.path.join(patient_position,
                                                 patient_name), "Gate{}".format(i)),"image_slice1.mat"))
             mat_shape = mat_data[list(mat_data.keys())[-1]].shape
@@ -199,7 +202,7 @@ def predict_patient_slices_epi(prediction_path, patient_position, patient_name):
             final_prediction = np.squeeze(np.argmax(np.mean(np.array(patient_fold_prediction), axis=0),axis=-1))
             print("Gate{}Done".format(i))
             for q in range(0,32):
-                num_progress = (i*32+(q+1))/(32*8)*100
+                num_progress = (i*32+(q+1))/(32*len(gate_index_list))*100
                 countour_image = trans_to_original_scale(final_prediction[q], mat_shape)
                 np.save(os.path.join(os.path.join(prediction_path,"Gate{}".format(i)),"epi_slice{}.npy".format(q+1)),countour_image)
                 # plt.imsave(os.path.join(os.path.join(prediction_path, "Gate{}".format(i)), "epi_slice{}.png".format(q + 1)),countour_image)

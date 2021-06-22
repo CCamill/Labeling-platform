@@ -386,11 +386,7 @@
             inputElement = $('<input type="file"  multiple webkitdirectory name="file" upload/>')
             inputElement.change(() => {
                 CurrentFile = inputElement[0].files;
-                console.log("CurrentFile")
-                console.log(CurrentFile)
                 Date_path = CurrentFile[0].webkitRelativePath
-                console.log("Date_path:")
-                console.log(Date_path)
                 window.Patient_name = Date_path.substring(0,Date_path.indexOf('/Gate'))
                 $('#FileName').text(window.Patient_name)
                 var fd = new FormData();
