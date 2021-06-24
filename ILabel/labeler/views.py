@@ -12,6 +12,7 @@ import cv2
 from labeler import model
 import zipfile
 from io import BytesIO
+import matplotlib.colors as colors
 
 BASE_DIR = settings.BASE_DIR
 
@@ -26,10 +27,17 @@ global num_progress
 global mode_index
 mode_index = 1
 
+def colormap():
+    # 白青绿黄红
+    color_dict = scio.loadmat(os.path.join(static_dir,"GEColormap.mat"))['GEColormap']
+    return colors.ListedColormap(color_dict, 'indexed')
+
 
 def index(request):
     global mode_index
     global num_progress
+    global mycolor
+    mycolor = colormap()
     mode_index = 1
     num_progress = 0
     return render(request, "index.html")
@@ -117,7 +125,7 @@ def trans_mat_to_png(patient_position, patient_name,processed_dir,prediction_pat
             image_slice_mat_data = mat_data[list(mat_data.keys())[-1]]
             #改动前 plt.imsave(os.path.join(image_slice_png_path), image_slice_mat_data)
             #将image_slice_mat_data矩阵数据覆盖到image_slice_png_path图片上
-            plt.imsave(image_slice_png_path, image_slice_mat_data)
+            plt.imsave(image_slice_png_path, image_slice_mat_data, cmap=mycolor)
             #np.array(image_slice_mat_data)把列表转换成数组
             gate_slices.append(trans_to_predict(np.array(image_slice_mat_data)))
         prediction_gate_path = os.path.join(prediction_path,"Gate{}".format(gate_index))
@@ -130,7 +138,7 @@ def trans_mat_to_png(patient_position, patient_name,processed_dir,prediction_pat
         np.save(os.path.join(prediction_gate_path,"gate{}.npy".format(gate_index)),save_npy)
 
 def predict_patient_slices_endo(prediction_path, patient_position, patient_name,gate_index_list):
-    print("Predicting")
+    print("Predicting Endo")
     global mode_index
     global num_progress
     mode_index = 1
@@ -163,13 +171,13 @@ def predict_patient_slices_endo(prediction_path, patient_position, patient_name,
             final_prediction = np.squeeze(np.argmax(np.mean(np.array(patient_fold_prediction), axis=0),axis=-1))
             print("Gate{}Done".format(i))
             for q in range(0,32):
-                num_progress = (i * 32 + (q + 1)) / (32 * len(gate_index_list))*100
+                num_progress = ((i-gate_index_list[0]) * 32 + (q + 1)) / (32 * len(gate_index_list))*100
                 countour_image = trans_to_original_scale(final_prediction[q], mat_shape)
                 np.save(os.path.join(os.path.join(prediction_path,"Gate{}".format(i)),"endo_slice{}.npy".format(q+1)),countour_image)
                 # plt.imsave(os.path.join(os.path.join(prediction_path,"Gate{}".format(i)),"endo_slice{}.png".format(q+1)),countour_image)
 
 def predict_patient_slices_epi(prediction_path, patient_position, patient_name,gate_index_list):
-    print("Predicting")
+    print("Predicting Epi")
     global mode_index
     global num_progress
     mode_index = 3
@@ -202,7 +210,7 @@ def predict_patient_slices_epi(prediction_path, patient_position, patient_name,g
             final_prediction = np.squeeze(np.argmax(np.mean(np.array(patient_fold_prediction), axis=0),axis=-1))
             print("Gate{}Done".format(i))
             for q in range(0,32):
-                num_progress = (i*32+(q+1))/(32*len(gate_index_list))*100
+                num_progress = ((i-gate_index_list[0])*32+(q+1))/(32*len(gate_index_list))*100
                 countour_image = trans_to_original_scale(final_prediction[q], mat_shape)
                 np.save(os.path.join(os.path.join(prediction_path,"Gate{}".format(i)),"epi_slice{}.npy".format(q+1)),countour_image)
                 # plt.imsave(os.path.join(os.path.join(prediction_path, "Gate{}".format(i)), "epi_slice{}.png".format(q + 1)),countour_image)
@@ -346,32 +354,6 @@ def trans_points(current_contour):
         contour.append(point)
     return contour
 
-def gen_zip_with_zipfile(start_dir,patient_name,gate_name):
-    start_dir = start_dir  # 要压缩的文件夹路径
-
-    file_news = os.path.join(os.path.join(upload_dir,patient_name),gate_name) + '.zip'  # 压缩后文件夹的名字
-
-    z = zipfile.ZipFile(file_news, 'w', zipfile.ZIP_DEFLATED)
-    for dir_path, dir_names, file_names in os.walk(start_dir):
-        f_path = dir_path.replace(start_dir, '')  # 这一句很重要，不replace的话，就从根目录开始复制
-        f_path = f_path and f_path + os.sep or ''  # 实现当前文件夹以及包含的所有文件的压缩
-        for filename in file_names:
-            z.write(os.path.join(dir_path, filename), f_path + filename)
-    z.close()
-
-def download_zipfile(request):
-    patient_name = eval(request.POST.getlist("patient_name")[0])
-    patient_path = os.path.join(os.path.join(upload_dir,patient_name),patient_name)
-    gate_index = eval(request.POST.getlist("gate_index")[0])
-    gate_name = 'Gate{}'.format(gate_index)
-    gate_path = os.path.join(patient_path,gate_name)
-    gen_zip_with_zipfile(gate_path,patient_name,gate_name)
-    context = {
-        "File_dir": json.dumps("/static/upload/"),
-        "Patient_name": json.dumps(patient_name),
-        "gate_dir": json.dumps(gate_name),
-    }
-    return JsonResponse(context)
 def gen_zip_with_zipfile_patient(start_dir):
     start_dir = start_dir  # 要压缩的文件夹路径
     file_news = start_dir + '.zip'  # 压缩后文件夹的名字
@@ -384,7 +366,7 @@ def gen_zip_with_zipfile_patient(start_dir):
             z.write(os.path.join(dir_path, filename), f_path + filename)
     z.close()
     
-def download_patient_zipfile(request):
+def download_zipfile(request):
     patient_name = eval(request.POST.getlist("patient_name")[0])
     patient_path = os.path.join(os.path.join(upload_dir,patient_name),patient_name)
     gen_zip_with_zipfile_patient(patient_path)
