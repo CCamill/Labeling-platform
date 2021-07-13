@@ -13,7 +13,7 @@ SECRET_KEY = 'mlm=o30ho5_0sgh@-z2xy!*@jo(+zv&82zro1-w*x$+v1(jrg6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

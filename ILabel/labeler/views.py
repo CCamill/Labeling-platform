@@ -13,6 +13,7 @@ from labeler import model
 import zipfile
 from io import BytesIO
 import matplotlib.colors as colors
+import re
 
 BASE_DIR = settings.BASE_DIR
 
@@ -31,7 +32,6 @@ def colormap():
     # 白青绿黄红
     color_dict = scio.loadmat(os.path.join(static_dir,"GEColormap.mat"))['GEColormap']
     return colors.ListedColormap(color_dict, 'indexed')
-
 
 def index(request):
     global mode_index
@@ -73,11 +73,14 @@ def upload(request):
                     storage.write(chunk)
                 storage.close()
             origin_patient_data_path = os.path.join(patient_position,patient_name)
+            File_formatting(origin_patient_data_path)
+            Format_mat_files(origin_patient_data_path)
             gate_index_list = []
             for gate in os.listdir(origin_patient_data_path):
                 gate_path = os.path.join(origin_patient_data_path,gate)
                 if len(os.listdir(gate_path)) != 224:
                     gate_index_list.append(int(gate_path[-1]))
+            gate_index_list.sort()
 
             print('gate_index_list',gate_index_list)
             #static\upload\Patient008902\processed
@@ -102,6 +105,61 @@ def upload(request):
             }
             return JsonResponse(context)
 
+def Format_mat_files(patient_path):
+    Gate_list = os.listdir(patient_path)
+    for gate in Gate_list:
+        Gate_path = os.path.join(patient_path,gate)
+        mat_list = os.listdir(Gate_path)
+        for mat in mat_list:
+            mat_path = os.path.join(Gate_path,mat)
+            data = scio.loadmat(mat_path)
+            arry_key = list(data.keys())[-1]
+            if data[arry_key].shape[0] >= 40:
+                Y_axis_center = data[arry_key].shape[0] // 2
+                data[arry_key] = data[arry_key][Y_axis_center-20:Y_axis_center+20]
+                scio.savemat(mat_path, {arry_key: data[arry_key]})
+            else:
+                pass
+def rename_file(origin_name,new_name,Gate_path,mat_path,mat):
+    if re.match(origin_name, mat) and origin_name == 'endocardial':
+        if len(mat) == 36:
+            index = int(mat[31:32])
+            new_name = os.path.join(Gate_path, new_name.format(index))
+            os.rename(mat_path, new_name)
+        if len(mat) == 37:
+            index = int(mat[31:33])
+            new_name = os.path.join(Gate_path, new_name.format(index))
+            os.rename(mat_path, new_name)
+    if re.match(origin_name, mat) and origin_name == 'midcardial':
+        if len(mat) == 35:
+            index = int(mat[30:31])
+            new_name = os.path.join(Gate_path, new_name.format(index))
+            os.rename(mat_path, new_name)
+        if len(mat) == 36:
+            index = int(mat[30:32])
+            new_name = os.path.join(Gate_path, new_name.format(index))
+            os.rename(mat_path, new_name)
+    if re.match(origin_name, mat) and origin_name == 'Epicardial':
+        if len(mat) == 35:
+            index = int(mat[30:31])
+            new_name = os.path.join(Gate_path, new_name.format(index))
+            os.rename(mat_path, new_name)
+        if len(mat) == 36:
+            index = int(mat[30:32])
+            new_name = os.path.join(Gate_path, new_name.format(index))
+            os.rename(mat_path, new_name)
+
+
+def File_formatting(origin_patient_data_path):
+    Gate_list = os.listdir(origin_patient_data_path)
+    for gate in Gate_list:
+        Gate_path = os.path.join(origin_patient_data_path,gate)
+        mat_list = os.listdir(Gate_path)
+        for mat in mat_list:
+            mat_path = os.path.join(Gate_path,mat)
+            rename_file('endocardial','Endocardial_contour_slice{}.mat',Gate_path,mat_path,mat)
+            rename_file('midcardial', 'MidMyocardial_contour_slice{}.mat',Gate_path,mat_path,mat)
+            rename_file('Epicardial', 'Epicardial_contour_slice{}.mat',Gate_path,mat_path,mat)
 #mat文件转png
 def trans_mat_to_png(patient_position, patient_name,processed_dir,prediction_path,gate_index_list):
     for gate_index in gate_index_list:
